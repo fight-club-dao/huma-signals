@@ -20,3 +20,11 @@ test:
 
 run-local:
 	ENV=development poetry run python3 -m uvicorn huma_signals.api.main:app --reload
+
+build-image:
+	docker build -t huma-signals -f Dockerfile.lambda .
+
+push-image: build-image
+	aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 778966706143.dkr.ecr.us-east-2.amazonaws.com
+	docker tag huma-signals:latest 778966706143.dkr.ecr.us-east-2.amazonaws.com/huma-signals:latest
+	docker push 778966706143.dkr.ecr.us-east-2.amazonaws.com/huma-signals:latest

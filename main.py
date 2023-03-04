@@ -4,6 +4,7 @@ import sentry_sdk
 import structlog
 from ddtrace import opentracer
 from fastapi.middleware import cors
+from mangum import Mangum
 
 from huma_signals.api import views
 from huma_signals.settings import settings
@@ -46,7 +47,8 @@ app.add_middleware(
 )
 app.include_router(views.router, prefix="", tags=["huma_signals"])
 
-
 @app.get("/health")
 async def get_health() -> str:
     return "ok"
+
+handler = Mangum(app)

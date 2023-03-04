@@ -22,4 +22,5 @@ class SpectralWalletAdapter(models.SignalAdapterBase):
     async def fetch(  # pylint: disable=arguments-differ
         self, borrower_wallet_address: str, *args: Any, **kwargs: Any
     ) -> spectral_client.SpectralWalletSignals:
+        print("fetching spectral scores")
         return await self.spectral_api_client.get_scores(borrower_wallet_address)
