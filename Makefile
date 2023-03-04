@@ -19,7 +19,7 @@ test:
 	ENV=test poetry run python3 -m pytest -v --cov=huma_signals --color=yes --cov-report term-missing --ignore=tests/adapters/request_network
 
 run-local:
-	ENV=development poetry run python3 -m uvicorn huma_signals.api.main:app --reload --port 8001
+	ENV=development poetry run python3 -m uvicorn main:app --reload --port 8001
 
 build-image:
 	docker build -t huma-signals -f Dockerfile.lambda .

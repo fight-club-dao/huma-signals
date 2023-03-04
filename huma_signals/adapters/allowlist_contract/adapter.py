@@ -36,7 +36,7 @@ class AllowListContractAdapter(adapter_models.SignalAdapterBase):
         chain_obj = Chain.from_chain_name(chain)
         w3 = await web3_utils.get_w3(chain_obj, settings.web3_provider_url)
 
-        abi = await self._get_abi(chain_obj)
+        abi = await self._get_abi(chain_obj, contract_address)
         allow_list_contract = w3.eth.contract(
             address=web3.Web3.to_checksum_address(contract_address),
             abi=orjson.loads(abi),
@@ -47,10 +47,10 @@ class AllowListContractAdapter(adapter_models.SignalAdapterBase):
             on_allowlist=(borrower_wallet_address in whitelisted_borrowers)
         )
 
-    async def _get_abi(self, chain_obj):
-        if chain_obj == Chain.LOCAL:
+    async def _get_abi(self, chain_obj, contract_address):
+        if chain_obj != Chain.ETHEREUM:
             async with aiofiles.open(pathlib.Path(__file__).parent.resolve() / "abi" / "YourContract.json",
                                      encoding="utf-8") as f:
                 return await f.read()
         else:
-            return await self.etherscan_client.get_contract_abi("0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413")
+            return await self.etherscan_client.get_contract_abi(contract_address)
