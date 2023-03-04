@@ -1,4 +1,4 @@
-from huma_signals.api import main
+import main
 
 
 def describe_get_health() -> None:
