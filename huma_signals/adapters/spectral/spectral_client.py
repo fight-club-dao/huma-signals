@@ -76,7 +76,8 @@ class SpectralClient(models.HumaBaseModel):
                 return resp.json()
         except httpx.HTTPStatusError as e:
             logger.error("Error fetching transactions", exc_info=True, request=request)
-            raise e
+            # raise e
+            return {'status': 'error'}
 
     async def get_scores(self, wallet_address: str) -> SpectralWalletSignals:
         results = await self.get_results(wallet_address)

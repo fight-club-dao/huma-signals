@@ -25,7 +25,7 @@ _POOLS = [
     ),
     PoolSetting(
         pool_address=web3.Web3.to_checksum_address(
-            "0x11672c0bBFF498c72BC2200f42461c0414855042"
+            "0xDD8e560bcEf9C25EA26eA8FC47113AAb6D89D75B"
         ),
         chain=chains.Chain.GOERLI,
         pool_abi_path=str(

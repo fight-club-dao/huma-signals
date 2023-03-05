@@ -41,6 +41,14 @@ class LendingPoolSignals(models.HumaBaseModel):
         ...,
         description="For invoice factoring pool, the percentage of the payable amount the pool allow to borrow",
     )
+    total_assets: float = pydantic.Field(
+        ...,
+        description="Total assets of the pool",
+    )
+    total_supply: float = pydantic.Field(
+        ...,
+        description="Total supply of the pool",
+    )
     is_testnet: bool = pydantic.Field(
         default=False, description="Whether the pool is on testnet or not"
     )
@@ -53,11 +61,11 @@ class LendingPoolAdapter(adapter_models.SignalAdapterBase):
     invoice_amount_ratio: ClassVar[float] = 0.8
 
     name: ClassVar[str] = "lending_pool"
-    required_inputs: ClassVar[List[str]] = ["pool_address"]
+    required_inputs: ClassVar[List[str]] = ["pool_address", "hdt_address"]
     signals: ClassVar[List[str]] = list(LendingPoolSignals.__fields__.keys())
 
     async def fetch(  # pylint: disable=arguments-differ
-        self, pool_address: str, *args: Any, **kwargs: Any
+        self, pool_address: str, hdt_address: str, *args: Any, **kwargs: Any
     ) -> LendingPoolSignals:
         pool_settings = registry.POOL_REGISTRY[
             web3.Web3.to_checksum_address(pool_address)
@@ -81,7 +89,20 @@ class LendingPoolAdapter(adapter_models.SignalAdapterBase):
                 abi=orjson.loads(contents),
             )
 
+        async with aiofiles.open(
+            pathlib.Path(__file__).parent.resolve() / "abi" / "HDT.json",
+            encoding="utf-8",
+        ) as f:
+            contents = await f.read()
+            hdt_contract = w3.eth.contract(
+                address=web3.Web3.to_checksum_address(hdt_address),
+                abi=orjson.loads(contents),
+            )
+
+
         pool_summary = await pool_config_contract.functions.getPoolSummary().call()
+        total_assets = await hdt_contract.functions.totalAssets().call()
+        total_supply = await hdt_contract.functions.totalSupply().call()
         return LendingPoolSignals(
             pool_address=pool_address,
             apr=pool_summary[1],
@@ -92,5 +113,7 @@ class LendingPoolAdapter(adapter_models.SignalAdapterBase):
             interval_in_days_max=self.interval_in_days_max,
             interval_in_days_min=self.interval_in_days_min,
             invoice_amount_ratio=self.invoice_amount_ratio,
+            total_assets=total_assets,
+            total_supply=total_supply,
             is_testnet=pool_settings.chain.is_testnet(),
         )
